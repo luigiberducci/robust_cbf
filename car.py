@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 import time
 
-from control import get_trajectory
+from control.control import get_trajectory
 
 class Car:
     def __init__(self, x, y, max_acceleration=4.0):
@@ -120,6 +120,10 @@ class Car:
         state[2] = max(-self.max_velocity, min(state[2], self.max_velocity))
         state[3] = max(-self.max_velocity, min(state[3], self.max_velocity))
         return state
+
+    @property
+    def state(self):
+        return np.concatenate([self.position, self.velocity], axis=0)
 
 if __name__ == '__main__':
     car = Car(0,0)

@@ -1,0 +1,8 @@
+numpy
+matplotlib
+pygame
+osqp
+cvxpy
+scipy
+gymnasium
+pandas

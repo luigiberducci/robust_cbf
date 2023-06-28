@@ -5,3 +5,11 @@ This code simulates a multi-agent environment in which a controlled agent (blue)
 Run "python game_GP.py" to run the simulation with the robust multi-agent Control Barrier Function (CBF) in a randomized environment. This runs 1000 trials, first with the robust CBF controller, and next with the nominal CBF controller. The CBF code setting up the QP is found in "control.py". The MVG code predicting the uncertainties is found in "GP_predict.py"
 
 The script "GP_train.py" optimizes the MVG hyperparameters, based on entered training data. To execute it, you must load in a set of training data.  
+
+# TODO
+- [x] gymnasium api for game simualtor
+- [x] scale rendering window (zoom level)
+- [x] test consistency of simulation results
+- [ ] add observation space to gymnasium api
+- [ ] identify cbf tunable parameters in paper and code
+- [ ] collect simulations under different cbf parameters, statistics like success rate, average time, collision rate...

@@ -15,7 +15,11 @@ kDebug = False
 kDraw = False
 kVideo = False
 
-def filter_output(agent_idx, agents, x_nom, T=1, G_all=None, g_all=None, m=None, z=None):
+def filter_output(agent_idx, agents, x_nom, T=1, G_all=None, g_all=None, m=None, z=None, gamma=None):
+    # cbf coefficient to control rate of change of barrier function
+    if gamma is None:
+        gamma = agents[agent_idx].gamma
+
     N_a = len(agents)
     x0 = np.array([agents[agent_idx].position[0], agents[agent_idx].position[1],
                    agents[agent_idx].velocity[0], agents[agent_idx].velocity[1]])
@@ -99,7 +103,9 @@ def filter_output(agent_idx, agents, x_nom, T=1, G_all=None, g_all=None, m=None,
                 g = np.kron(np.ones(2), np.array([zp_max, zp_max, zv_max, zv_max, zph_max, zph_max, zvh_max, zvh_max]))
             else:
                 g = g_all[j-1,:]
-            kc = min(np.dot(fp - fp_h, fv - fv_h) / den_p, np.dot(fp - fp_h, fv - fv_h) / den_m) + np.sqrt(amax*(max(den_m - agents[agent_idx].Ds, 0.))) + (agents[agent_idx].gamma - 1)*np.sqrt(amax*(max(np.linalg.norm(pr - ph) - agents[agent_idx].Ds, 0.))) + (agents[agent_idx].gamma-1)*np.dot(pr - ph, vr - vh)/(max(np.linalg.norm(pr - ph), eps_m))
+            kc = min(np.dot(fp - fp_h, fv - fv_h) / den_p, np.dot(fp - fp_h, fv - fv_h) / den_m) + \
+                 np.sqrt(amax*(max(den_m - agents[agent_idx].Ds, 0.))) + \
+                 (gamma - 1)*np.sqrt(amax*(max(np.linalg.norm(pr - ph) - agents[agent_idx].Ds, 0.))) + (gamma-1)*np.dot(pr - ph, vr - vh)/(max(np.linalg.norm(pr - ph), eps_m))
             h_l1 = np.expand_dims(np.hstack([H3, np.zeros(4), -1.0, np.zeros(dual_f*idx), g, np.zeros(dual_f*(len(agents)-2-idx))]), axis=0)
             h_l2 = np.hstack([np.transpose(H2), np.zeros((8, 4)), np.zeros((8,1)), np.zeros((8,dual_f*idx)), -np.transpose(G), np.zeros((8, dual_f*(len(agents)-2-idx)))])
             h_r2 = -H1
@@ -122,7 +128,10 @@ def filter_output(agent_idx, agents, x_nom, T=1, G_all=None, g_all=None, m=None,
 
     return ctrl 
 
-def filter_output_primal(agent_idx, agents, x_nom, T=1):
+def filter_output_primal(agent_idx, agents, x_nom, T=1, gamma=None):
+    if gamma is None:
+        gamma = agents[agent_idx].gamma
+
     x0 = np.array([agents[agent_idx].position[0], agents[agent_idx].position[1],
                    agents[agent_idx].velocity[0], agents[agent_idx].velocity[1]])
     amax = 0.8*agents[agent_idx].max_acceleration
@@ -167,8 +176,8 @@ def filter_output_primal(agent_idx, agents, x_nom, T=1):
             vd = np.array([x0[2] - agents[j].velocity[0],
                            x0[3] - agents[j].velocity[1]])
             c = pd + vd*agents[j].dt
-            h_const = np.dot(c, vd) / np.linalg.norm(c) + np.sqrt(abs(amax)*(max(np.linalg.norm(c) - agents[agent_idx].Ds, 0))) - (1 - agents[agent_idx].gamma)*np.dot(
-                pd, vd)/np.linalg.norm(pd) - (1 - agents[agent_idx].gamma)*np.sqrt(abs(amax)*(max(np.linalg.norm(pd) - agents[agent_idx].Ds, 0)))  # Ignore u_{user}
+            h_const = np.dot(c, vd) / np.linalg.norm(c) + np.sqrt(abs(amax)*(max(np.linalg.norm(c) - agents[agent_idx].Ds, 0))) - (1 - gamma)*np.dot(
+                pd, vd)/np.linalg.norm(pd) - (1 - gamma)*np.sqrt(abs(amax)*(max(np.linalg.norm(pd) - agents[agent_idx].Ds, 0)))  # Ignore u_{user}
             h_u = c*agents[j].dt/np.linalg.norm(c)
 
             ub = h_const
