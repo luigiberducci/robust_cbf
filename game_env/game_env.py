@@ -22,6 +22,8 @@ class GameEnv(gymnasium.Env):
         # env params
         self.params = {
             "T": 150,  # simulation time
+            "min_agents": 3,
+            "max_agents": 10,
             "dist_threshold": 1.0,
             "coll_threshold": 4.9,
             "noise_a": 0.001,  # noise on acceleration input
@@ -61,7 +63,11 @@ class GameEnv(gymnasium.Env):
         self.steps = 0
 
         # initialize agents
-        self.N_a = np.random.randint(3, 10)
+        if options is not None and "n_agents" in options:
+            min_agents = max_agents = options["n_agents"]
+        else:
+            min_agents, max_agents = self.params["min_agents"], self.params["max_agents"]
+        self.N_a = np.random.randint(min_agents, max_agents + 1)
 
         # initialize starting and goal positions
         self.agents = []
@@ -132,9 +138,13 @@ class GameEnv(gymnasium.Env):
         # compute input for other agents
         for j in range(1, self.N_a):
             # Obtain (CBF) controller for other agent (if applicable)
-            u2, x2_path, x2_0 = get_trajectory(self.agents[j])
-            if (self.agents[j].Ds > 0):
-                u2 = filter_output_primal(j, self.agents, x2_path)
+            try:
+                u2, x2_path, x2_0 = get_trajectory(self.agents[j])
+                if (self.agents[j].Ds > 0):
+                    u2 = filter_output_primal(j, self.agents, x2_path)
+            except ValueError as e:
+                u2 = np.zeros(2)
+                x2_0 = self.agents[j].state
             self.agents_ctrl[j] = u2
             # get agent's relative state
             rel_state[j, :] = x2_0 - self.agents[0].state

@@ -6,3 +6,4 @@ cvxpy
 scipy
 gymnasium
 pandas
+pyyaml
