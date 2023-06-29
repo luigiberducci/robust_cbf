@@ -185,6 +185,8 @@ class GameEnv(gymnasium.Env):
         info = {
             "min_dist": self.min_dist,
             "unfeasible": int(opt_info["opt_status"] < 0),
+            "success": int(success),
+            "collision": int(collision_flag),
         }
         done = self.steps >= self.params["T"] or success or collision_flag
         truncated = collision_flag
