@@ -262,7 +262,7 @@ def plotting(all_stats):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--gamma_min", type=float, default=0.0)
+    parser.add_argument("--gamma_min", type=float, default=0.1)
     parser.add_argument("--gamma_max", type=float, default=1.0)
     parser.add_argument("--gamma_n", type=int, default=5)
 
