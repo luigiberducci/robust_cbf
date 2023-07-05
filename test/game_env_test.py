@@ -36,7 +36,9 @@ class GameEnvTest(unittest.TestCase):
             gym_env.render()
             i += 1
 
-        data, data_u, success, collision_flag, i, min_dist = original_game.run(seed=seed)
+        data, data_u, success, collision_flag, i, min_dist = original_game.run(
+            seed=seed
+        )
 
     def test_reproduce_results(self):
         seed = 42
@@ -68,8 +70,10 @@ class GameEnvTest(unittest.TestCase):
                 ep_lengths_success.append(ep_length)
                 ep_min_dist_success.append(info["min_dist"])
 
-            print(f"episode {i}: success: {not truncated}, collision: {truncated}, length: {ep_length}, " \
-                  f"min dist: {info['min_dist']}, elapsed time: {time.time() - t0}")
+            print(
+                f"episode {i}: success: {not truncated}, collision: {truncated}, length: {ep_length}, "
+                f"min dist: {info['min_dist']}, elapsed time: {time.time() - t0}"
+            )
 
         success_rate = n_success / n_episodes
         collision_rate = n_collisions / n_episodes

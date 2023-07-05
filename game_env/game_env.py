@@ -10,11 +10,11 @@ from car import Car
 from control.control import get_trajectory, filter_output_primal
 from control.gp_controller import GPCar
 
-data_dir = pathlib.Path(__file__).parent.parent.absolute() / 'data'
+data_dir = pathlib.Path(__file__).parent.parent.absolute() / "data"
 
 
 class GameEnv(gymnasium.Env):
-    metadata = {'render.modes': ['human', 'rgb_array']}
+    metadata = {"render.modes": ["human", "rgb_array"]}
 
     def __init__(self, render_mode=None):
         super().__init__()
@@ -51,7 +51,10 @@ class GameEnv(gymnasium.Env):
             pygame.display.set_caption("CBF Test")
             self.screen = pygame.display.set_mode((self.window_size, self.window_size))
             self.clock = pygame.time.Clock()
-        assert self.render_mode in [None, 'human'], "rgb_array rendering not implemented yet"
+        assert self.render_mode in [
+            None,
+            "human",
+        ], "rgb_array rendering not implemented yet"
 
     def reset(self, seed=None, options=None):
         # seeding
@@ -66,7 +69,10 @@ class GameEnv(gymnasium.Env):
         if options is not None and "n_agents" in options:
             min_agents = max_agents = options["n_agents"]
         else:
-            min_agents, max_agents = self.params["min_agents"], self.params["max_agents"]
+            min_agents, max_agents = (
+                self.params["min_agents"],
+                self.params["max_agents"],
+            )
         self.N_a = np.random.randint(min_agents, max_agents + 1)
 
         # initialize starting and goal positions
@@ -74,7 +80,9 @@ class GameEnv(gymnasium.Env):
         self.agents_ctrl = np.zeros((self.N_a, 2))
 
         for i in range(self.N_a):
-            other_starting_positions = np.array([self.agents[j].position for j in range(i)])
+            other_starting_positions = np.array(
+                [self.agents[j].position for j in range(i)]
+            )
             x0, y0 = self._sample_free_position(other_starting_positions, dist=8.0)
 
             if i == 0:
@@ -101,7 +109,9 @@ class GameEnv(gymnasium.Env):
         return obs, info
 
     @staticmethod
-    def _sample_free_position(occupied_positions: np.ndarray, dist: float) -> np.ndarray:
+    def _sample_free_position(
+        occupied_positions: np.ndarray, dist: float
+    ) -> np.ndarray:
         """
         Samples a position in the environment at random, and ensures
         that the position is at least a distance dist away from any
@@ -114,7 +124,7 @@ class GameEnv(gymnasium.Env):
         max_x = max_y = 60
         in_collision = True
         x, y = -1, -1
-        while (in_collision):
+        while in_collision:
             in_collision = False
             x, y = max_x * np.random.rand(), max_y * np.random.rand()
             if occupied_positions.shape[0] > 0:
@@ -140,7 +150,7 @@ class GameEnv(gymnasium.Env):
             # Obtain (CBF) controller for other agent (if applicable)
             try:
                 u2, x2_path, x2_0 = get_trajectory(self.agents[j])
-                if (self.agents[j].Ds > 0):
+                if self.agents[j].Ds > 0:
                     u2 = filter_output_primal(j, self.agents, x2_path)
             except ValueError as e:
                 u2 = np.zeros(2)
@@ -152,7 +162,9 @@ class GameEnv(gymnasium.Env):
             self.min_dist = min(self.min_dist, np.linalg.norm(rel_state[j, :2]))
 
         # compute input for our robot
-        self.agents_ctrl[0], opt_info = self.agents[0].plan(state=rel_state, d_state=d_state, agents=self.agents, gamma=gamma)
+        self.agents_ctrl[0], opt_info = self.agents[0].plan(
+            state=rel_state, d_state=d_state, agents=self.agents, gamma=gamma
+        )
 
         # step simulation
         noise_a = self.params["noise_a"]
@@ -170,12 +182,23 @@ class GameEnv(gymnasium.Env):
         dist_threshold = self.params["dist_threshold"]
         success, collision_flag = False, False
         for j in range(1, self.N_a):
-            if (np.linalg.norm(self.agents[0].position - self.agents[j].position) < coll_threshold):
+            if (
+                np.linalg.norm(self.agents[0].position - self.agents[j].position)
+                < coll_threshold
+            ):
                 success = False
                 collision_flag = True
-        if (np.linalg.norm(self.agents[0].position - self.agents[0].goal) < dist_threshold and collision_flag):
+        if (
+            np.linalg.norm(self.agents[0].position - self.agents[0].goal)
+            < dist_threshold
+            and collision_flag
+        ):
             success = False
-        elif (np.linalg.norm(self.agents[0].position - self.agents[0].goal) < dist_threshold and not collision_flag):
+        elif (
+            np.linalg.norm(self.agents[0].position - self.agents[0].goal)
+            < dist_threshold
+            and not collision_flag
+        ):
             success = True
 
         # compute reward
@@ -201,14 +224,27 @@ class GameEnv(gymnasium.Env):
             # Draw other agents
             radius = self.params["coll_threshold"] / 2 * ppu
             for j in range(1, self.N_a):
-                pygame.draw.circle(self.screen, [200, 0, 0], (self.agents[j].position * ppu).astype(int), radius)
+                pygame.draw.circle(
+                    self.screen,
+                    [200, 0, 0],
+                    (self.agents[j].position * ppu).astype(int),
+                    radius,
+                )
             # Draw our goal
-            agent1_goal = pygame.image.load(f'{data_dir}/star.png')
+            agent1_goal = pygame.image.load(f"{data_dir}/star.png")
             rect = agent1_goal.get_rect()
-            self.screen.blit(agent1_goal, self.agents[0].goal * ppu -
-                             (rect.width / 2, rect.height / 2))
+            self.screen.blit(
+                agent1_goal,
+                self.agents[0].goal * ppu - (rect.width / 2, rect.height / 2),
+            )
             # Draw our agent
-            pygame.draw.circle(self.screen, [0, 0, 200], (self.agents[0].position * ppu).astype(int), radius)
+            pygame.draw.circle(
+                self.screen,
+                [0, 0, 200],
+                (self.agents[0].position * ppu).astype(int),
+                radius,
+            )
             pygame.display.flip()
+
     def close(self):
         pass

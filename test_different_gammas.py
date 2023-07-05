@@ -28,8 +28,13 @@ def main(args):
         # prepare outdir
         subdir = f"Nep{n_episodes}_{time.strftime('%Y%m%d-%H%M%S')}"
         outdir = pathlib.Path(args.outdir) / subdir if args.outdir else None
-        all_stats = collect_stats_grid_search(params_grid=params_grid, n_episodes=n_episodes,
-                                              seed=seed, render_mode=render_mode, outdir=outdir)
+        all_stats = collect_stats_grid_search(
+            params_grid=params_grid,
+            n_episodes=n_episodes,
+            seed=seed,
+            render_mode=render_mode,
+            outdir=outdir,
+        )
 
     plotting(all_stats)
 
@@ -61,10 +66,32 @@ def load_stats_from_dir(indir: pathlib.Path, file_regex: str = "*.csv") -> dict:
         # parse stats
         sr, cr, succlengths, succmindist, unfeasibility = process_results(results)
 
-        for k, v in zip(["gamma", "agents", "success_rate", "collision_rate", "succ_length_mu", "succ_length_std",
-                         "succ_min_dist_mu", "succ_min_dist_std", "ep_unfeasible_mu", "ep_unfeasible_std"],
-                        [gamma, n_agents, sr, cr, np.mean(succlengths), np.std(succlengths), np.mean(succmindist),
-                         np.std(succmindist), np.mean(unfeasibility), np.std(unfeasibility)]):
+        for k, v in zip(
+            [
+                "gamma",
+                "agents",
+                "success_rate",
+                "collision_rate",
+                "succ_length_mu",
+                "succ_length_std",
+                "succ_min_dist_mu",
+                "succ_min_dist_std",
+                "ep_unfeasible_mu",
+                "ep_unfeasible_std",
+            ],
+            [
+                gamma,
+                n_agents,
+                sr,
+                cr,
+                np.mean(succlengths),
+                np.std(succlengths),
+                np.mean(succmindist),
+                np.std(succmindist),
+                np.mean(unfeasibility),
+                np.std(unfeasibility),
+            ],
+        ):
             if k not in all_stats:
                 all_stats[k] = []
             all_stats[k].append(v)
@@ -96,7 +123,7 @@ def collect_stats_grid_search(params_grid, seed, n_episodes, outdir, render_mode
         "succ_min_dist_mu": [],
         "succ_min_dist_std": [],
         "ep_unfeasible_mu": [],
-        "ep_unfeasible_std": []
+        "ep_unfeasible_std": [],
     }
 
     # create output directory
@@ -112,10 +139,32 @@ def collect_stats_grid_search(params_grid, seed, n_episodes, outdir, render_mode
         results = collect_stats(env, gamma, n_agents, seed, n_episodes, verbose=True)
         sr, cr, succlengths, succmindist, unfeasibility = process_results(results)
 
-        for k, v in zip(["gamma", "agents", "success_rate", "collision_rate", "succ_length_mu", "succ_length_std",
-                         "succ_min_dist_mu", "succ_min_dist_std", "ep_unfeasible_mu", "ep_unfeasible_std"],
-                        [gamma, n_agents, sr, cr, np.mean(succlengths), np.std(succlengths), np.mean(succmindist),
-                         np.std(succmindist), np.mean(unfeasibility), np.std(unfeasibility)]):
+        for k, v in zip(
+            [
+                "gamma",
+                "agents",
+                "success_rate",
+                "collision_rate",
+                "succ_length_mu",
+                "succ_length_std",
+                "succ_min_dist_mu",
+                "succ_min_dist_std",
+                "ep_unfeasible_mu",
+                "ep_unfeasible_std",
+            ],
+            [
+                gamma,
+                n_agents,
+                sr,
+                cr,
+                np.mean(succlengths),
+                np.std(succlengths),
+                np.mean(succmindist),
+                np.std(succmindist),
+                np.mean(unfeasibility),
+                np.std(unfeasibility),
+            ],
+        ):
             all_stats[k].append(v)
 
         print("[results]")
@@ -152,7 +201,9 @@ def process_results(results: dict) -> tuple:
     return sr, cr, succlengths, succmindist, unfeasibility
 
 
-def collect_stats(env, gamma: float, n_agents: int, seed: int, n_episodes: int, verbose: bool = False) -> dict:
+def collect_stats(
+    env, gamma: float, n_agents: int, seed: int, n_episodes: int, verbose: bool = False
+) -> dict:
     """
     Simulate n_episodes with a given `gamma` and `n_agents` and return the results.
 
@@ -203,9 +254,11 @@ def collect_stats(env, gamma: float, n_agents: int, seed: int, n_episodes: int, 
 
         if verbose:
             min_dist = info["min_dist"]
-            print(f"\tepisode {i}: success: {info['success']}, collision: {info['collision']}, "
-                  f"length: {ep_length}, min dist: {min_dist:.2f}, unfeasible k: {ep_unfeasible_k}, "
-                  f"elapsed time: {time.time() - t0:.2f} sec")
+            print(
+                f"\tepisode {i}: success: {info['success']}, collision: {info['collision']}, "
+                f"length: {ep_length}, min dist: {min_dist:.2f}, unfeasible k: {ep_unfeasible_k}, "
+                f"elapsed time: {time.time() - t0:.2f} sec"
+            )
 
     results = {
         "success": np.array(ep_success),
@@ -222,8 +275,18 @@ def plotting(all_stats):
     # plot all stats
     fig, axes = plt.subplots(2, 2, figsize=(10, 10))
     metrics = ["success_rate", "collision_rate", "succ_min_dist_mu", "ep_unfeasible_mu"]
-    titles = ["Success rate", "Collision rate", "Minimum distance - Safe episodes", "Unfeasible rate"]
-    ylabels = ["Higher is better", "Lower is better", "Higher is better", "Lower is better"]
+    titles = [
+        "Success rate",
+        "Collision rate",
+        "Minimum distance - Safe episodes",
+        "Unfeasible rate",
+    ]
+    ylabels = [
+        "Higher is better",
+        "Lower is better",
+        "Higher is better",
+        "Lower is better",
+    ]
     min_max_y = [(0, 1), (0, 1), (0.0, 30.0), (0, 150.0)]
     margin_percent = 0.1
 
@@ -231,7 +294,24 @@ def plotting(all_stats):
     all_agents = set(all_stats["agents"])
 
     # create list of different linestyles and colors for each agent
-    markers = ["o", "v", "^", "<", ">", "s", "p", "*", "h", "H", "+", "x", "D", "d", "|", "_"]
+    markers = [
+        "o",
+        "v",
+        "^",
+        "<",
+        ">",
+        "s",
+        "p",
+        "*",
+        "h",
+        "H",
+        "+",
+        "x",
+        "D",
+        "d",
+        "|",
+        "_",
+    ]
 
     for i, n_agents in enumerate(all_agents):
         stat_ids = np.where(np.array(all_stats["agents"]) == n_agents)[0]
@@ -251,13 +331,21 @@ def plotting(all_stats):
 
             ax = axes[r, c]
             ax.set_title(f"{label}")
-            ax.step(gammas, values, where="post", marker=marker,
-                    label=f"NAgents={n_agents:.0f}")
-            ax.set_ylim(min_y - margin_percent * y_range, max_y + margin_percent * y_range)
+            ax.step(
+                gammas,
+                values,
+                where="post",
+                marker=marker,
+                label=f"NAgents={n_agents:.0f}",
+            )
+            ax.set_ylim(
+                min_y - margin_percent * y_range, max_y + margin_percent * y_range
+            )
             ax.set_xlabel("gamma")
             ax.set_ylabel(y_label)
 
     ax.legend()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -274,8 +362,12 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--render_mode", type=str, default=None)
 
-    parser.add_argument("--indir", type=str, default=None, help="Directory from which to load results")
-    parser.add_argument("--outdir", type=str, default=None, help="Directory to save results")
+    parser.add_argument(
+        "--indir", type=str, default=None, help="Directory from which to load results"
+    )
+    parser.add_argument(
+        "--outdir", type=str, default=None, help="Directory to save results"
+    )
 
     args = parser.parse_args()
 
